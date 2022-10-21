@@ -11,4 +11,7 @@ setup(
     download_url='https://github.com/selfjared1/syncfreedom-lib/archive/refs/tags/0.1.zip',
     keywords=['quickbooks online', 'quickbooks'],
     classifiers=[],
+    install_requires=[
+        'python-quickbooks'
+    ]
 )
