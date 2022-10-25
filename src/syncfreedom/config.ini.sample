@@ -1,0 +1,10 @@
+[SYNCFREEDOM_CREDENTIALS]
+username = your_syncfreedom_username
+password = your_syncfreedom_password
+
+[SYNCFREEDOM_TEST_COMPANY]
+company_id = 'test_company_realm_id'
+
+[ENVIRONMENT_INFO]
+environment=Sandbox
+# environment=Production
