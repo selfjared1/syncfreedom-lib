@@ -32,7 +32,7 @@ class SyncFreedomQBOConnection():
         auth_str = bytes(str(credentials['username']) + ':' + str(credentials['password']), "ascii")
         user_and_pass = b64encode(auth_str).decode("ascii")
         headers = {'Authorization': 'Basic %s' % user_and_pass}
-        response = requests.get('https://syncfreedom.com/api/qbo_connection',
+        response = requests.get(configur['ENVIRONMENT_INFO']['sync_freedom_url'] + '/api/qbo_connection',
                                 params={'realm_id': self.realm_id},
                                 headers=headers)
         assert response.status_code, 200
@@ -40,7 +40,7 @@ class SyncFreedomQBOConnection():
         assert response_dict['count'], 1
         qbo_connection_dict = response_dict['results'][0]
         self.__setattr__('qbo_company_name',qbo_connection_dict['qbo_company_name'])
-        self.__setattr__('last_refresh_dt', qbo_connection_dict['last_refresh_dt'])
+        self.__setattr__('last_refresh_dt', qbo_connection_dict['last_refreshed_dt'])
         self.__setattr__('access_token', qbo_connection_dict['access_token'])
         self.__setattr__('refresh_token', qbo_connection_dict['refresh_token'])
         self.__setattr__('x_refresh_token_expires_in_seconds', qbo_connection_dict['x_refresh_token_expires_in_seconds'])
@@ -242,19 +242,14 @@ class SyncFreedomAuthClient(AuthClient):
 
 class SyncFreedomQuickBooks(QuickBooks):
 
-    def __init__(self):
-        super(SyncFreedomQuickBooks, self).__init__()
+    # def __init__(self):
+    #     super(SyncFreedomQuickBooks, self).__init__(self)
 
     def __new__(cls, company_id=None, **kwargs):
         """
-        If global is disabled, don't set global client instance.
+        Global is disabled, don't set global client instance.
         """
-        if QuickBooks.__use_global:
-            if QuickBooks.__instance is None:
-                QuickBooks.__instance = object.__new__(cls)
-            instance = QuickBooks.__instance
-        else:
-            instance = object.__new__(cls)
+        instance = object.__new__(cls)
 
         if 'company_id' in kwargs:
             instance.company_id = kwargs['company_id']
@@ -275,7 +270,7 @@ class SyncFreedomQuickBooks(QuickBooks):
                 instance.sandbox = False
             instance.auth_client.access_token = qbo_connection.access_token
 
-        instance.refresh_token = instance._start_session(qbo_connection)
+        instance.refresh_token = instance._start_session()
 
         if 'minorversion' in kwargs:
             instance.minorversion = kwargs['minorversion']
@@ -336,6 +331,7 @@ class SyncFreedomQuickBooks(QuickBooks):
     #     return qb
 
 if __name__ == '__main__':
-    company_id = 123145782634539 #live
-    # company_id = '193514608588409'  # local
-    qb = SyncFreedomQuickBooks.from_company_id(company_id)
+    # company_id = 123145782634539 #live
+    company_id = '4620816365233591830'  # local
+    qb = SyncFreedomQuickBooks(company_id=company_id)
+    print(qb)
