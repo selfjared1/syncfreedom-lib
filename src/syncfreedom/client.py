@@ -20,8 +20,11 @@ class Environments(object):
     PRODUCTION = 'production'
 
 class SyncFreedomQBOConnection():
-    """You can find documentation on how to use this class here: https://pypi.org/project/python-quickbooks/
-        Or go to the github page here: https://github.com/ej2/python-quickbooks
+    """
+    You set your credentials inside of a dictionary or an ini file.  Use the keys 'username' and 'password'
+    This class is a modification of the QBOConnection class located in the python-quickbooks Pypi package
+    You can find documentation on the python-quickbooks Pypi package here: https://pypi.org/project/python-quickbooks/
+    Or go to the github page here: https://github.com/ej2/python-quickbooks
     """
 
     def __init__(self, company_id, credentials):
