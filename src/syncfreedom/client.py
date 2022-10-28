@@ -10,15 +10,19 @@ from intuitlib.utils import send_request
 
 from intuitlib.utils import get_discovery_doc
 from future.moves.urllib.parse import urlencode
+import os
 
 configur = ConfigParser()
-configur.read('config.ini')
+configur.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
 
 class Environments(object):
     SANDBOX = 'sandbox'
     PRODUCTION = 'production'
 
 class SyncFreedomQBOConnection():
+    """You can find documentation on how to use this class here: https://pypi.org/project/python-quickbooks/
+        Or go to the github page here: https://github.com/ej2/python-quickbooks
+    """
 
     def __init__(self, company_id):
         self.realm_id = company_id
@@ -35,9 +39,9 @@ class SyncFreedomQBOConnection():
         response = requests.get(configur['ENVIRONMENT_INFO']['sync_freedom_url'] + '/api/qbo_connection',
                                 params={'realm_id': self.realm_id},
                                 headers=headers)
-        assert response.status_code, 200
+        assert response.status_code == 200
         response_dict = json.loads(response.text)
-        assert response_dict['count'], 1
+        assert response_dict['count'] == 1, f"""Company Id {self.realm_id} returned {response_dict['count']} results"""
         qbo_connection_dict = response_dict['results'][0]
         self.__setattr__('qbo_company_name',qbo_connection_dict['qbo_company_name'])
         self.__setattr__('last_refresh_dt', qbo_connection_dict['last_refreshed_dt'])
@@ -189,3 +193,9 @@ class SyncFreedomQuickBooks(QuickBooks):
             print('dont have refresh token')
             return None
 
+
+if __name__ == '__main__':
+    # company_id = 123145782634539 #live
+    company_id = '4620816365233591830'  # local
+    qb = SyncFreedomQuickBooks(company_id=company_id)
+    print(qb)
