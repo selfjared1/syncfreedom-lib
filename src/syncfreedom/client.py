@@ -24,16 +24,13 @@ class SyncFreedomQBOConnection():
         Or go to the github page here: https://github.com/ej2/python-quickbooks
     """
 
-    def __init__(self, company_id):
+    def __init__(self, company_id, credentials):
         self.realm_id = company_id
+        self.credentials = credentials
         self._get_qbo_connection()
 
     def _get_qbo_connection(self):
-        try:
-            credentials = configur['SYNCFREEDOM_CREDENTIALS']
-        except Exception as e:
-            raise Exception(e)
-        auth_str = bytes(str(credentials['username']) + ':' + str(credentials['password']), "ascii")
+        auth_str = bytes(str(self.credentials['username']) + ':' + str(self.credentials['password']), "ascii")
         user_and_pass = b64encode(auth_str).decode("ascii")
         headers = {'Authorization': 'Basic %s' % user_and_pass}
         response = requests.get(configur['ENVIRONMENT_INFO']['sync_freedom_url'] + '/api/qbo_connection',
@@ -142,10 +139,7 @@ class SyncFreedomAuthClient(AuthClient):
 
 class SyncFreedomQuickBooks(QuickBooks):
 
-    # def __init__(self):
-    #     super(SyncFreedomQuickBooks, self).__init__(self)
-
-    def __new__(cls, company_id=None, **kwargs):
+    def __new__(cls, company_id=None, credentials=None, **kwargs):
         """
         Global is disabled, don't set global client instance.
         """
@@ -156,7 +150,13 @@ class SyncFreedomQuickBooks(QuickBooks):
         else:
             instance.company_id = company_id
 
-        qbo_connection = SyncFreedomQBOConnection(instance.company_id)
+        if not credentials:
+            try:
+                credentials = configur['SYNCFREEDOM_CREDENTIALS']
+            except Exception as e:
+                raise Exception(e)
+
+        qbo_connection = SyncFreedomQBOConnection(instance.company_id, credentials)
         instance.refresh_token = qbo_connection.refresh_token
 
         if 'auth_client' in kwargs:
@@ -192,10 +192,3 @@ class SyncFreedomQuickBooks(QuickBooks):
             # todo: better exeption handling here
             print('dont have refresh token')
             return None
-
-
-if __name__ == '__main__':
-    # company_id = 123145782634539 #live
-    company_id = '4620816365233591830'  # local
-    qb = SyncFreedomQuickBooks(company_id=company_id)
-    print(qb)
