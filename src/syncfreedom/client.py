@@ -1,19 +1,14 @@
 from quickbooks.client import QuickBooks
-from quickbooks.client import OAuth2Session
-from rauth.session import RauthSession
-from configparser import ConfigParser
 import requests
 from base64 import b64encode
 import json
 from intuitlib.client import AuthClient
 from intuitlib.utils import send_request
-
 from intuitlib.utils import get_discovery_doc
 from future.moves.urllib.parse import urlencode
-import os
+from .session import SyncFreedomOAuth2Session
 
-configur = ConfigParser()
-configur.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
+sync_freedom_url = 'https://syncfreedom.com'
 
 class Environments(object):
     SANDBOX = 'sandbox'
@@ -36,7 +31,7 @@ class SyncFreedomQBOConnection():
         auth_str = bytes(str(self.credentials['username']) + ':' + str(self.credentials['password']), "ascii")
         user_and_pass = b64encode(auth_str).decode("ascii")
         headers = {'Authorization': 'Basic %s' % user_and_pass}
-        response = requests.get(configur['ENVIRONMENT_INFO']['sync_freedom_url'] + '/api/qbo_connection',
+        response = requests.get(sync_freedom_url + '/api/qbo_connection',
                                 params={'realm_id': self.realm_id},
                                 headers=headers)
         assert response.status_code == 200
@@ -142,7 +137,7 @@ class SyncFreedomAuthClient(AuthClient):
 
 class SyncFreedomQuickBooks(QuickBooks):
 
-    def __new__(cls, company_id=None, credentials=None, **kwargs):
+    def __new__(cls, company_id, credentials, sandbox=False, **kwargs):
         """
         Global is disabled, don't set global client instance.
         """
@@ -153,26 +148,19 @@ class SyncFreedomQuickBooks(QuickBooks):
         else:
             instance.company_id = company_id
 
-        if not credentials:
-            try:
-                credentials = configur['SYNCFREEDOM_CREDENTIALS']
-            except Exception as e:
-                raise Exception(e)
-
         qbo_connection = SyncFreedomQBOConnection(instance.company_id, credentials)
         instance.refresh_token = qbo_connection.refresh_token
 
         if 'auth_client' in kwargs:
             instance.auth_client = kwargs['auth_client']
+        elif sandbox:
+            instance.auth_client = SyncFreedomAuthClient(qbo_connection, 'Sandbox')
+            instance.sandbox = True
         else:
-            instance.auth_client = SyncFreedomAuthClient(qbo_connection, configur['ENVIRONMENT_INFO']['environment'])
+            instance.auth_client = SyncFreedomAuthClient(qbo_connection, 'Production')
+            instance.sandbox = False
 
-            if instance.auth_client.environment == Environments.SANDBOX:
-                instance.sandbox = True
-            else:
-                instance.sandbox = False
-            instance.auth_client.access_token = qbo_connection.access_token
-
+        instance.auth_client.access_token = qbo_connection.access_token
         instance.refresh_token = instance._start_session()
 
         if 'minorversion' in kwargs:
@@ -189,6 +177,7 @@ class SyncFreedomQuickBooks(QuickBooks):
         if self.auth_client.access_token is None:
             self.auth_client.refresh(refresh_token=self.refresh_token)
 
+        self.session = SyncFreedomOAuth2Session(access_token=self.auth_client.access_token)
         if self.auth_client.refresh_token:
             return self.auth_client.refresh_token
         else:

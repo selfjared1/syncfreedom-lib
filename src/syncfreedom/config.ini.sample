@@ -6,7 +6,7 @@ password = your_syncfreedom_password
 company_id = 'test_company_realm_id'
 
 [ENVIRONMENT_INFO]
-environment=Sandbox
-#environment=Production
-sync_freedom_url=http://127.0.0.1:8000
-#sync_freedom_url=https://syncfreedom.com
+#environment=Sandbox
+environment=Production
+#sync_freedom_url=http://127.0.0.1:8000
+sync_freedom_url=https://syncfreedom.com
