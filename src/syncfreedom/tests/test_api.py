@@ -15,7 +15,7 @@ class APITest(unittest.TestCase):
         self.assertIsNot(company_id, 'test_company_realm_id')
         self.company_id = company_id
         print(company_id)
-        self.qb = SyncFreedomQuickBooks(company_id=self.company_id, credentials=credentials)
+        self.qb = SyncFreedomQuickBooks(company_id=self.company_id, credentials=credentials, sandbox=True)
         self.assertEquals(configur['ENVIRONMENT_INFO']['sync_freedom_url'], 'http://127.0.0.1:8000')
 
     def test_account(self):
