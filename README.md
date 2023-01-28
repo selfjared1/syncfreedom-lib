@@ -29,7 +29,7 @@ SyncFreedom credentials as arguments.
 For example:
 
     from syncfreedom.client import SyncFreedomQuickBooks
-    from quickbooks.objects.account import Account
+    from quickbooks.objects.customer import Customer
     
     credentials = {
         'username':'your_syncfreedom_username', 
@@ -59,7 +59,7 @@ you will access the credentials and use this package like
 the following:
 
     from syncfreedom.client import SyncFreedomQuickBooks
-    from quickbooks.objects.account import Account
+    from quickbooks.objects.customer import Customer
     from configparser import ConfigParser
     
     configur = ConfigParser()
