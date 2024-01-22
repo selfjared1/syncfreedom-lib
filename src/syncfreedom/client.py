@@ -16,16 +16,21 @@ class Environments(object):
 
 class SyncFreedomQBOConnection():
     """
-    You set your credentials inside of a dictionary or an ini file.  Use the keys 'username' and 'password'
+    You set your credentials inside a dictionary or an ini file.  Use the keys 'username' and 'password'
     This class is a modification of the QBOConnection class located in the python-quickbooks Pypi package
     You can find documentation on the python-quickbooks Pypi package here: https://pypi.org/project/python-quickbooks/
     Or go to the github page here: https://github.com/ej2/python-quickbooks
     """
 
-    def __init__(self, company_id, credentials):
+    def __init__(self, company_id, credentials=None, qbo_connection_dict=None):
         self.realm_id = company_id
         self.credentials = credentials
-        self._get_qbo_connection()
+        if credentials:
+            self._get_qbo_connection()
+        elif qbo_connection_dict:
+            self._from_dict(qbo_connection_dict)
+        else:
+            raise ValueError('Either credentials or qbo_connection_dict must be provided')
 
     def _get_qbo_connection(self):
         auth_str = bytes(str(self.credentials['username']) + ':' + str(self.credentials['password']), "ascii")
@@ -44,6 +49,48 @@ class SyncFreedomQBOConnection():
         self.__setattr__('refresh_token', qbo_connection_dict['refresh_token'])
         self.__setattr__('x_refresh_token_expires_in_seconds', qbo_connection_dict['x_refresh_token_expires_in_seconds'])
         self.__setattr__('access_token_expires_in_seconds', qbo_connection_dict['access_token_expires_in_seconds'])
+
+    def _from_dict(self, qbo_connection_dict):
+        try:
+            self.__setattr__('qbo_company_name', qbo_connection_dict['qbo_company_name'])
+            self.__setattr__('last_refresh_dt', qbo_connection_dict['last_refreshed_dt'])
+            self.__setattr__('access_token', qbo_connection_dict['access_token'])
+            self.__setattr__('refresh_token', qbo_connection_dict['refresh_token'])
+            self.__setattr__('x_refresh_token_expires_in_seconds',
+                             qbo_connection_dict['x_refresh_token_expires_in_seconds'])
+            self.__setattr__('access_token_expires_in_seconds', qbo_connection_dict['access_token_expires_in_seconds'])
+        except Exception as e:
+            raise e
+
+class SyncFreedomQBOConnections():
+    """
+        You set your credentials inside a dictionary or an ini file.  Use the keys 'username' and 'password'
+        This class is to manage the list of QBOConnections on SyncFreedom.com
+        """
+    def __init__(self, credentials):
+        self.credentials = credentials
+        self.qbo_connections = []
+        self._get_qbo_connections()
+
+    def _get_qbo_connections(self):
+        auth_str = bytes(str(self.credentials['username']) + ':' + str(self.credentials['password']), "ascii")
+        user_and_pass = b64encode(auth_str).decode("ascii")
+        headers = {'Authorization': 'Basic %s' % user_and_pass}
+        response = requests.get(sync_freedom_url + '/api/qbo_connections',
+                                headers=headers)
+        assert response.status_code == 200
+        response_dict = json.loads(response.text)
+        assert response_dict['count'] > 0, f"""You have no QBO Connections on SyncFreedom.com"""
+        for result in response_dict['results']:
+            qbo_connection = SyncFreedomQBOConnection(result['realm_id'], qbo_connection_dict=result)
+            self.qbo_connections.append(qbo_connection)
+
+
+    @property
+    def company_names(self):
+        return [qbo_connection.qbo_company_name for qbo_connection in self.qbo_connections]
+
+
 
 class SyncFreedomAuthClient(AuthClient):
     """Leverages OAuth 2.0 Connect flows on SyncFreedom.com to get access to User Info API and Accoutning APIs
@@ -181,6 +228,6 @@ class SyncFreedomQuickBooks(QuickBooks):
         if self.auth_client.refresh_token:
             return self.auth_client.refresh_token
         else:
-            # todo: better exeption handling here
+            # todo: better exception handling here
             print('dont have refresh token')
             return None

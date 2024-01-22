@@ -7,7 +7,7 @@ import os
 configur = ConfigParser()
 configur.read(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.ini'))
 
-class APITest(unittest.TestCase):
+class TestSyncFreedomQuickBooks(unittest.TestCase):
 
     def setUp(self):
         company_id = configur['SYNCFREEDOM_TEST_COMPANY']['company_id']
