@@ -87,9 +87,23 @@ class SyncFreedomQBOConnections():
 
 
     @property
-    def company_names(self):
+    def company_name_list(self):
         return [qbo_connection.qbo_company_name for qbo_connection in self.qbo_connections]
 
+    def get_from_company_name(self, company_name):
+        qbo_connection = next((qbo_connection for qbo_connection in self.qbo_connections if qbo_connection.qbo_company_name.lower() == company_name.lower()), None)
+        if qbo_connection is None:
+            raise ValueError('Company name not found')
+        else:
+            return qbo_connection
+
+    def get_from_realm_id(self, realm_id):
+        qbo_connection = next((qbo_connection for qbo_connection in self.qbo_connections if
+                               qbo_connection.realm_id == realm_id), None)
+        if qbo_connection is None:
+            raise ValueError('Company realm_id not found')
+        else:
+            return qbo_connection
 
 
 class SyncFreedomAuthClient(AuthClient):
@@ -184,9 +198,10 @@ class SyncFreedomAuthClient(AuthClient):
 
 class SyncFreedomQuickBooks(QuickBooks):
 
-    def __new__(cls, company_id, credentials, sandbox=False, **kwargs):
+    def __new__(cls, company_id, credentials=None, qbo_connection=None, sandbox=False, **kwargs):
         """
         Global is disabled, don't set global client instance.
+        You must either set credentials or set qbo_connection for this to work.
         """
         instance = object.__new__(cls)
 
@@ -195,7 +210,12 @@ class SyncFreedomQuickBooks(QuickBooks):
         else:
             instance.company_id = company_id
 
-        qbo_connection = SyncFreedomQBOConnection(instance.company_id, credentials)
+        if credentials is not None:
+            qbo_connection = SyncFreedomQBOConnection(instance.company_id, credentials)
+        elif qbo_connection is not None:
+            pass
+        else:
+            raise ValueError('Either credentials or qbo_connection must be provided')
         instance.refresh_token = qbo_connection.refresh_token
 
         if 'auth_client' in kwargs:

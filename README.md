@@ -72,3 +72,17 @@ the following:
         credentials=credentials
         )
     customers = Customer.all(qb=qb)
+
+If you are trying to get the full list of connections in SyncFreedom
+use the SyncFreedomConnections class like the following:
+
+    from syncfreedom.client import SyncFreedomQuickBooks, SyncFreedomQBOConnections
+    from configparser import ConfigParser
+    
+    configur = ConfigParser()
+    configur.read(r"""C:\your_file_path_to_the_config_file\config.ini"""))
+
+    credentials = configur['SYNCFREEDOM_CREDENTIALS']
+    
+    qbo_connections = SyncFreedomQBOConnections(self.credentials)
+    connection = qbo_connections.get_by_company_name('My Company Name')
