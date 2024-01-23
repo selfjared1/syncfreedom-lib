@@ -139,3 +139,5 @@ dmypy.json
 .idea/**/dictionaries
 .idea/**/shelf
 .idea*
+.pypirc
+

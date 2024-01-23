@@ -32,6 +32,10 @@ class SyncFreedomQBOConnection():
         else:
             raise ValueError('Either credentials or qbo_connection_dict must be provided')
 
+    @property
+    def company_id(self):
+        return self.realm_id
+
     def _get_qbo_connection(self):
         auth_str = bytes(str(self.credentials['username']) + ':' + str(self.credentials['password']), "ascii")
         user_and_pass = b64encode(auth_str).decode("ascii")
@@ -198,7 +202,7 @@ class SyncFreedomAuthClient(AuthClient):
 
 class SyncFreedomQuickBooks(QuickBooks):
 
-    def __new__(cls, company_id, credentials=None, qbo_connection=None, sandbox=False, **kwargs):
+    def __new__(cls, company_id, credentials, sandbox=False, **kwargs):
         """
         Global is disabled, don't set global client instance.
         You must either set credentials or set qbo_connection for this to work.
@@ -210,12 +214,7 @@ class SyncFreedomQuickBooks(QuickBooks):
         else:
             instance.company_id = company_id
 
-        if credentials is not None:
-            qbo_connection = SyncFreedomQBOConnection(instance.company_id, credentials)
-        elif qbo_connection is not None:
-            pass
-        else:
-            raise ValueError('Either credentials or qbo_connection must be provided')
+        qbo_connection = SyncFreedomQBOConnection(instance.company_id, credentials)
         instance.refresh_token = qbo_connection.refresh_token
 
         if 'auth_client' in kwargs:

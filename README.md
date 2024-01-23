@@ -83,6 +83,12 @@ use the SyncFreedomConnections class like the following:
     configur.read(r"""C:\your_file_path_to_the_config_file\config.ini"""))
 
     credentials = configur['SYNCFREEDOM_CREDENTIALS']
-    
     qbo_connections = SyncFreedomQBOConnections(self.credentials)
+
+    #then create qb from the connections list
     connection = qbo_connections.get_by_company_name('My Company Name')
+    qb = SyncFreedomQuickBooks(
+        company_id=connection.company_id, 
+        credentials=credentials
+        )
+    customers = Customer.all(qb=qb)

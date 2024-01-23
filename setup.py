@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='syncfreedom',
     packages=['syncfreedom'],
-    version='1.0.4',  # Ideally should be same as your GitHub release tag version
+    version='1.0.6',  # Ideally should be same as your GitHub release tag version
     description='Initial Release',
     author='Jared Self',
     author_email='jared@quickbooksgg.com',
