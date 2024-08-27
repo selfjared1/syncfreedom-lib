@@ -80,14 +80,18 @@ class SyncFreedomQBOConnections():
         auth_str = bytes(str(self.credentials['username']) + ':' + str(self.credentials['password']), "ascii")
         user_and_pass = b64encode(auth_str).decode("ascii")
         headers = {'Authorization': 'Basic %s' % user_and_pass}
-        response = requests.get(sync_freedom_url + '/api/qbo_connections',
-                                headers=headers)
-        assert response.status_code == 200
-        response_dict = json.loads(response.text)
-        assert response_dict['count'] > 0, f"""You have no QBO Connections on SyncFreedom.com"""
-        for result in response_dict['results']:
-            qbo_connection = SyncFreedomQBOConnection(result['realm_id'], qbo_connection_dict=result)
-            self.qbo_connections.append(qbo_connection)
+        url = sync_freedom_url + '/api/qbo_connections'
+
+        while url:
+            response = requests.get(url, headers=headers)
+            assert response.status_code == 200
+            response_dict = json.loads(response.text)
+            assert response_dict['count'] > 0, "You have no QBO Connections on SyncFreedom.com"
+            for result in response_dict['results']:
+                qbo_connection = SyncFreedomQBOConnection(result['realm_id'], qbo_connection_dict=result)
+                self.qbo_connections.append(qbo_connection)
+
+            url = response_dict.get('next')
 
 
     @property

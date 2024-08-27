@@ -54,9 +54,9 @@ in config.ini file:
     sync_freedom_url=https://syncfreedom.com
 
 
-When your credentials are inside of the config.ini file 
-you will access the credentials and use this package like 
-the following:
+When your credentials are inside the config.ini file you 
+will access the credentials and use this package like 
+the following example:
 
     from syncfreedom.client import SyncFreedomQuickBooks
     from quickbooks.objects.account import Account
@@ -86,9 +86,9 @@ use the SyncFreedomConnections class like the following:
     qbo_connections = SyncFreedomQBOConnections(self.credentials)
 
     #then create qb from the connections list
-    connection = qbo_connections.get_by_company_name('My Company Name')
+    qbo_connection = qbo_connections.get_by_company_name('My Company Name')
     qb = SyncFreedomQuickBooks(
-        company_id=connection.company_id, 
+        company_id=qbo_connection.company_id, 
         credentials=credentials
         )
     customers = Customer.all(qb=qb)
